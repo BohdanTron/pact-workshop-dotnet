@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Consumer;
+using System;
 
-namespace Consumer
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            var ApiClient = new ApiClient(new Uri("http://localhost:9001"));
+var apiClient = new ApiClient(new Uri("http://localhost:9001"));
 
-            Console.WriteLine("**Retrieving product list**");
-            var response = ApiClient.GetAllProducts().GetAwaiter().GetResult();
-            var responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            Console.WriteLine($"Response.Code={response.StatusCode}, Response.Body={responseBody}\n\n");
+Console.WriteLine("**Retrieving product list**");
 
-            int productId = 10;
-            Console.WriteLine($"**Retrieving product with id={productId}");
-            response = ApiClient.GetProduct(productId).GetAwaiter().GetResult();
-            responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            Console.WriteLine($"Response.Code={response.StatusCode}, Response.Body={responseBody}");
-        }
-    }
-}
+var response = await apiClient.GetAllProducts();
+var responseBody = await response.Content.ReadAsStringAsync();
+
+Console.WriteLine($"Response.Code={response.StatusCode}, Response.Body={responseBody}\n\n");
+
+
+var productId = 10;
+Console.WriteLine($"**Retrieving product with id={productId}");
+
+response = await apiClient.GetProduct(productId);
+responseBody = await response.Content.ReadAsStringAsync();
+
+Console.WriteLine($"Response.Code={response.StatusCode}, Response.Body={responseBody}");

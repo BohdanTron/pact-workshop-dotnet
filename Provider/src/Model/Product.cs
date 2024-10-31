@@ -1,5 +1,4 @@
-﻿using System;
-namespace provider.Model
+﻿namespace provider.Model
 {
     public class Product
     {

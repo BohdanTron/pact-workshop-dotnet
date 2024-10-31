@@ -1,6 +1,5 @@
-﻿using System;
+﻿using provider.Model;
 using System.Collections.Generic;
-using provider.Model;
 
 namespace provider.Repositories
 {

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using provider.Model;
 using provider.Repositories;
+using System.Collections.Generic;
 
 namespace Provider.Controllers
 {
