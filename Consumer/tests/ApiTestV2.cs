@@ -29,7 +29,7 @@ namespace tests
             _pact = Pact.V4("ApiClient", "ProductService", new PactConfig
             {
                 PactDir = Path.Join("..", "..", "..", "..", "..", "pacts"),
-                Outputters = [new XUnitOutput(output)] // TODO: Figure out
+                Outputters = [new XUnitOutput(output)]
 
             }).WithHttpInteractions(port: Port);
 
@@ -64,7 +64,7 @@ namespace tests
             // Arrange
             _pact.UponReceiving("A valid request for a product")
                     .Given("product with ID 10 exists")
-                    .WithRequest(HttpMethod.Get, "/api/product/10")
+                    .WithRequest(HttpMethod.Get, "/api/products/10")
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json; charset=utf-8")
