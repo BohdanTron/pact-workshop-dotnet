@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using provider.Model;
+using provider.Repositories;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using System.Text.Json;
-using provider.Model;
-using provider.Repositories;
+using System.Threading.Tasks;
 
 namespace tests.Middleware
 {
@@ -26,18 +26,18 @@ namespace tests.Middleware
             {
                 { "products exist", ProductsExist },
                 { "product with ID 10 exists", Product10Exists },
-                // { "product with ID 11 does not exist", Product11DoesNotExist }, // STEP_7
-                // { "no products exist", NoProductsExist }, // STEP_7
+                { "product with ID 11 does not exist", Product11DoesNotExist },
+                { "no products exist", NoProductsExist },
                 // { "No auth token is provided", Product10Exists } // STEP_10
             };
         }
 
         private void ProductsExist()
         {
-            List<Product> products = new List<Product>()
+            var products = new List<Product>()
             {
-                new Product(9, "GEM Visa", "CREDIT_CARD", "v2"),
-                new Product(10, "28 Degrees", "CREDIT_CARD", "v1")
+                new(9, "GEM Visa", "CREDIT_CARD", "v2"),
+                new(10, "28 Degrees", "CREDIT_CARD", "v1")
             };
 
             _repository.SetState(products);
@@ -45,25 +45,23 @@ namespace tests.Middleware
 
         private void Product10Exists()
         {
-            List<Product> products = new List<Product>()
+            var products = new List<Product>()
             {
-                new Product(10, "28 Degrees", "CREDIT_CARD", "v1")
+                new(10, "28 Degrees", "CREDIT_CARD", "v1")
             };
 
             _repository.SetState(products);
         }
 
-        // // STEP_7
-        // private void NoProductsExist()
-        // {
-        //     _repository.SetState(new List<Product>());
-        // }
+        private void NoProductsExist()
+        {
+            _repository.SetState(new List<Product>());
+        }
 
-        // // STEP_7
-        // private void Product11DoesNotExist()
-        // {
-        //     ProductsExist();
-        // }
+        private void Product11DoesNotExist()
+        {
+            ProductsExist();
+        }
 
         public async Task Invoke(HttpContext context)
         {
@@ -80,7 +78,7 @@ namespace tests.Middleware
 
         private async Task HandleProviderStatesRequest(HttpContext context)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.StatusCode = (int) HttpStatusCode.OK;
 
             if (context.Request.Method.ToUpper() == HttpMethod.Post.ToString().ToUpper() &&
                 context.Request.Body != null)

@@ -16,7 +16,9 @@ namespace Consumer
         public async Task<HttpResponseMessage> GetAllProducts()
         {
             using var client = new HttpClient();
+            
             client.BaseAddress = _baseUri;
+            client.DefaultRequestHeaders.Add("Authorization", AuthorizationHeaderValue());
 
             try
             {
@@ -32,7 +34,9 @@ namespace Consumer
         public async Task<HttpResponseMessage> GetProduct(int id)
         {
             using var client = new HttpClient();
+            
             client.BaseAddress = _baseUri;
+            client.DefaultRequestHeaders.Add("Authorization", AuthorizationHeaderValue());
 
             try
             {
@@ -44,5 +48,7 @@ namespace Consumer
                 throw new Exception("There was a problem connecting to Products API.", ex);
             }
         }
+
+        private string AuthorizationHeaderValue() => $"Bearer {DateTime.Now:yyyy-MM-ddTHH:mm:ss.fffZ}";
     }
 }

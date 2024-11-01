@@ -29,8 +29,8 @@ namespace tests
             _pact = Pact.V4("ApiClient", "ProductService", new PactConfig
             {
                 PactDir = Path.Join("..", "..", "..", "..", "..", "pacts"),
-                Outputters = [new XUnitOutput(output)]
-
+                Outputters = [new XUnitOutput(output)],
+                LogLevel = PactLogLevel.Debug
             }).WithHttpInteractions(port: Port);
 
             _apiClient = new ApiClient(new System.Uri($"http://localhost:{Port}"));
@@ -43,6 +43,7 @@ namespace tests
             _pact.UponReceiving("A valid request for all products")
                     .Given("products exist")
                     .WithRequest(HttpMethod.Get, "/api/products")
+                    .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"))
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json; charset=utf-8")
@@ -65,18 +66,77 @@ namespace tests
             _pact.UponReceiving("A valid request for a product")
                     .Given("product with ID 10 exists")
                     .WithRequest(HttpMethod.Get, "/api/products/10")
+                    .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"))
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json; charset=utf-8")
                     .WithJsonBody(new TypeMatcher(_products[1]));
 
+            // Act / Assert
             await _pact.VerifyAsync(async ctx =>
             {
-                // Act
                 var response = await _apiClient.GetProduct(10);
 
-                // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            });
+        }
+
+        [Fact]
+        public async Task NoProductsExist()
+        {
+            // Arrange
+            _pact.UponReceiving("A valid request for all products")
+                    .Given("no products exist")
+                    .WithRequest(HttpMethod.Get, "/api/products")
+                    .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"))  // STEP_8
+                .WillRespond()
+                .WithStatus(HttpStatusCode.OK)
+                    .WithHeader("Content-Type", "application/json; charset=utf-8")
+                    .WithJsonBody(new TypeMatcher(new List<object>()));
+
+            // Act / Assert
+            await _pact.VerifyAsync(async ctx =>
+            {
+                var response = await _apiClient.GetAllProducts();
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            });
+        }
+
+        [Fact]
+        public async Task ProductDoesNotExist()
+        {
+            // Arrange
+            _pact.UponReceiving("A valid request for product")
+                    .Given("product with ID 11 does not exist")
+                    .WithRequest(HttpMethod.Get, "/api/products/11")
+                    .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"))
+                .WillRespond()
+                    .WithStatus(HttpStatusCode.NotFound);
+
+            // Act / Assert
+            await _pact.VerifyAsync(async ctx =>
+            {
+                var response = await _apiClient.GetProduct(11);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            });
+        }
+
+        [Fact]
+        public async Task GetProductMissingAuthHeader()
+        {
+            // Arrange
+            _pact.UponReceiving("A valid request for product")
+                .Given("No auth token is provided")
+                    .WithRequest(HttpMethod.Get, "/api/products/10")
+                .WillRespond()
+                    .WithStatus(HttpStatusCode.Unauthorized);
+
+            // Act / Assert
+            await _pact.VerifyAsync(async ctx =>
+            {
+                var response = await _apiClient.GetProduct(10);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             });
         }
     }

@@ -6,6 +6,7 @@ using PactNet.Verifier;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +24,7 @@ namespace tests
         }
 
         [Fact]
-        public void EnsureProviderApiHonorsPactWithConsumer()
+        public async Task EnsureProviderApiHonorsPactWithConsumer()
         {
             // Arrange
             using var webHost = WebHost.CreateDefaultBuilder()
@@ -31,7 +32,9 @@ namespace tests
                 .UseUrls(PactServiceUrl)
                 .Build();
 
-            webHost.Start();
+            await webHost.StartAsync();
+
+            //await Task.Delay(1000);
 
             // Act / Assert
             var pactVerifier = new PactVerifier("ProductService",
