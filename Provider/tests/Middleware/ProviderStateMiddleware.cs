@@ -28,7 +28,7 @@ namespace tests.Middleware
                 { "product with ID 10 exists", Product10Exists },
                 { "product with ID 11 does not exist", Product11DoesNotExist },
                 { "no products exist", NoProductsExist },
-                // { "No auth token is provided", Product10Exists } // STEP_10
+                { "No auth token is provided", Product10Exists }
             };
         }
 

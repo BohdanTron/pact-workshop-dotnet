@@ -1,50 +1,52 @@
-//using System;
-//using System.Collections.Generic;
-//using System.IO;
-//using Microsoft.AspNetCore;
-//using Microsoft.AspNetCore.Hosting;
-//using PactNet.Infrastructure.Outputters;
-//using PactNet.Output.Xunit;
-//using PactNet.Verifier;
-//using Xunit;
-//using Xunit.Abstractions;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using PactNet.Infrastructure.Outputters;
+using PactNet.Output.Xunit;
+using PactNet.Verifier;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Xunit;
+using Xunit.Abstractions;
 
-//namespace tests
-//{
-//    public class ProductTest
-//    {
-//        private string _pactServiceUri = "http://127.0.0.1:9001";
-//        private readonly ITestOutputHelper _output;
+namespace tests
+{
+    public class ProductTest
+    {
+        private const string PactServiceUrl = "http://localhost:9001";
 
-//        public ProductTest(ITestOutputHelper output)
-//        {
-//            _output = output;
-//        }
+        private readonly ITestOutputHelper _output;
 
-//        [Fact]
-//        public void EnsureProviderApiHonoursPactWithConsumer()
-//        {
-//            // Arrange
-//            var config = new PactVerifierConfig
-//            {
-//                Outputters = new List<IOutput>
-//                {
-//                    new XunitOutput(_output)
-//                }
-//            };
+        public ProductTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
-//            using (var _webHost = WebHost.CreateDefaultBuilder().UseStartup<TestStartup>().UseUrls(_pactServiceUri).Build())
-//            {
-//                _webHost.Start();
+        [Fact]
+        public async Task EnsureProviderApiHonorsPactWithConsumer()
+        {
+            // Arrange
+            using var webHost = WebHost.CreateDefaultBuilder()
+                .UseStartup<TestStartup>()
+                .UseUrls(PactServiceUrl)
+                .Build();
 
-//                //Act / Assert
-//                IPactVerifier pactVerifier = new PactVerifier("ProductService", config);
-//                var pactFile = new FileInfo(Path.Join("..", "..", "..", "..", "..", "pacts", "ApiClient-ProductService.json"));
-//                pactVerifier.WithHttpEndpoint(new Uri(_pactServiceUri))
-//                .WithFileSource(pactFile)
-//                .WithProviderStateUrl(new Uri($"{_pactServiceUri}/provider-states"))
-//                .Verify();
-//            }
-//        }
-//    }
-//}
+            await webHost.StartAsync();
+
+            await Task.Delay(2000);
+
+            // Act / Assert
+            var pactVerifier = new PactVerifier("ProductService",
+                new PactVerifierConfig { Outputters = new List<IOutput> { new XunitOutput(_output) } });
+
+            var pactFile = new FileInfo(Path.Join("..", "..", "..", "..", "..", "pacts", "ApiClient-ProductService.json"));
+
+            pactVerifier
+                .WithHttpEndpoint(new Uri(PactServiceUrl))
+                .WithFileSource(pactFile)
+                .WithProviderStateUrl(new Uri($"{PactServiceUrl}/provider-states"))
+                .Verify();
+        }
+    }
+}

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using provider.Repositories;
-// using provider.Middleware; // STEP_9
+using AuthorizationMiddleware = provider.Middleware.AuthorizationMiddleware;
 
 namespace Provider
 {
@@ -33,10 +33,10 @@ namespace Provider
             {
                 app.UseDeveloperExceptionPage();
             }
-            // app.UseMiddleware<AuthorizationMiddleware>(); // STEP_9
+            app.UseMiddleware<AuthorizationMiddleware>();
             app.UseRouting();
             app.UseEndpoints(e => e.MapControllers());
-            
+
         }
     }
 }
